@@ -1,5 +1,6 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import { Server } from 'socket.io';
 import { createClient } from '@supabase/supabase-js';
 import { rateLimit } from './rateLimit';
 
@@ -18,7 +19,7 @@ class SocketService {
   private auctionRooms: Map<string, Set<string>> = new Map(); // auctionId -> Set of userIds
 
   constructor(server: HTTPServer) {
-    this.io = new Server(server, {
+    this.io = new SocketIOServer(server, {
       path: '/socket',
       transports: ['websocket'],
     });
@@ -67,6 +68,10 @@ class SocketService {
 
   public updateCompetitiveness(auctionId: string, level: 'LOW' | 'MEDIUM' | 'HIGH') {
     this.io.to(auctionId).emit('competitiveness', level);
+  }
+
+  public notifyAuctionComplete(auctionId: string) {
+    this.io.to(auctionId).emit('auctionComplete', { auctionId });
   }
 }
 
